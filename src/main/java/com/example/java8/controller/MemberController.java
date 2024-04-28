@@ -2,6 +2,7 @@ package com.example.java8.controller;
 
 import com.example.java8.domain.Member;
 import com.example.java8.service.MemberService;
+import com.example.java8.vo.MemberDTO;
 import com.example.java8.vo.MemberSaveForm;
 import com.example.java8.vo.MemberUpdateDTO;
 import lombok.RequiredArgsConstructor;
@@ -34,16 +35,19 @@ public class MemberController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<Page<Member>> memberList(Pageable pageable) {
-        Page<Member> members = memberService.memberList(pageable);
+    public ResponseEntity<Page<MemberDTO>> memberList(Pageable pageable) {
+        Page<MemberDTO> memberDTOS = memberService.memberList(pageable).map(MemberDTO::convertToDto);
         return ResponseEntity.ok()
-                .body(members);
+                .body(memberDTOS);
     }
 
     @PatchMapping("/{memberId}")
     public ResponseEntity<Long> memberUpdate(
             @PathVariable Long memberId,
             @RequestBody @Validated MemberUpdateDTO memberUpdateDTO, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().build();
+        }
         Long updateMemberId = memberService.memberUpdate(memberId, memberUpdateDTO);
         return ResponseEntity.ok()
                 .body(updateMemberId);
